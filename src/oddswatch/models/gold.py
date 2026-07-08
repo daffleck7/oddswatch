@@ -78,3 +78,26 @@ class DimBook(BaseModel):
     valid_from: date
     valid_to: date | None
     is_current: bool
+
+
+class FactOddsTick(BaseModel):
+    """Odds tick fact table. Placeholder for streaming layer."""
+
+    tick_key: int
+    game_key: int
+    book_key: int
+    market_key: int
+    timestamp: str
+    line_value: float
+
+
+class FactBet(BaseModel):
+    """User bet fact table. Placeholder for streaming layer."""
+
+    bet_key: int
+    game_key: int
+    book_key: int
+    market_key: int
+    user_id: str
+    stake: float
+    odds_at_placement: float

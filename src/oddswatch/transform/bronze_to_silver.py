@@ -38,6 +38,7 @@ def generate_closing_total(home_score: int, away_score: int, seed: int = 0) -> f
     rounded = round(raw_total * 2) / 2
     if rounded % 1 == 0:
         rounded += 0.5
+    rounded = max(0.5, rounded)
     return rounded
 
 
@@ -79,7 +80,7 @@ def transform_mlb_to_silver(bronze_df: pd.DataFrame) -> pd.DataFrame:
         home_ml, away_ml = spread_to_moneyline(spread)
 
         rows.append({
-            "game_id": f"mlb_{row['date']}_{row['team1']}_{row['team2']}",
+            "game_id": f"mlb_{row['date']}_{row['team1']}_{row['team2']}_{idx}",
             "sport": "mlb",
             "date": pd.to_datetime(row["date"]).date(),
             "season": int(row["season"]),
@@ -114,7 +115,7 @@ def transform_world_cup_to_silver(bronze_df: pd.DataFrame) -> pd.DataFrame:
         game_date = pd.to_datetime(row["date"]).date()
 
         rows.append({
-            "game_id": f"wc_{row['date']}_{row['home_team']}_{row['away_team']}",
+            "game_id": f"wc_{row['date']}_{row['home_team']}_{row['away_team']}_{idx}",
             "sport": "world_cup",
             "date": game_date,
             "season": game_date.year,

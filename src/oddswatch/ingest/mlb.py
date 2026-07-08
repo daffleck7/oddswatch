@@ -25,7 +25,7 @@ def download_mlb_data(url: str = MLB_SOURCE_URL) -> pd.DataFrame:
     """
     response = httpx.get(url, follow_redirects=True, timeout=60.0)
     response.raise_for_status()
-    df = pd.read_csv(io.StringIO(response.text))
+    df = pd.read_csv(io.StringIO(response.text), low_memory=False)
     df = df[MLB_COLUMNS].copy()
     df = df.dropna(subset=["score1", "score2"])
     df["score1"] = df["score1"].astype(int)

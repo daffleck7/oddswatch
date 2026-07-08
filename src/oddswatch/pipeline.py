@@ -25,6 +25,20 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 
+def _pandas_dtype_to_glue(dtype_str: str) -> str:
+    """Map a pandas dtype string to a Glue column type."""
+    dtype_str = str(dtype_str)
+    if "int" in dtype_str:
+        return "int"
+    elif "float" in dtype_str:
+        return "double"
+    elif "bool" in dtype_str:
+        return "boolean"
+    elif "datetime" in dtype_str or "date" in dtype_str:
+        return "date"
+    return "string"
+
+
 SILVER_COLUMNS = [
     {"Name": "game_id", "Type": "string"},
     {"Name": "sport", "Type": "string"},
@@ -109,7 +123,8 @@ def run_pipeline(settings: Settings | None = None) -> None:
 
     for table_name, df in gold_tables.items():
         gold_columns = [
-            {"Name": col, "Type": "string"} for col in df.columns
+            {"Name": col, "Type": _pandas_dtype_to_glue(df[col].dtype)}
+            for col in df.columns
         ]
         register_table(
             f"gold_{table_name}",

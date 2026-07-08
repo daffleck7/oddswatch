@@ -44,9 +44,9 @@ def build_dim_game(
     team_lookup = dict(zip(dim_team["team_name"], dim_team["team_key"]))
 
     records = []
-    for idx, row in silver_df.iterrows():
+    for enum_idx, (_, row) in enumerate(silver_df.iterrows()):
         records.append({
-            "game_key": idx + 1,
+            "game_key": enum_idx + 1,
             "game_id": row["game_id"],
             "sport": row["sport"],
             "season": row["season"],
