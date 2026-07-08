@@ -2,9 +2,12 @@
 
 from datetime import date
 
+import boto3
 import pandas as pd
 import pytest
+from moto import mock_aws
 
+from oddswatch.config.settings import Settings
 from oddswatch.transform.silver_to_gold import (
     build_dim_team,
     build_dim_game,
@@ -12,6 +15,7 @@ from oddswatch.transform.silver_to_gold import (
     build_dim_market,
     build_fact_game_odds,
 )
+from oddswatch.transform.s3_writer import upload_parquet_to_s3
 
 
 SAMPLE_SILVER = pd.DataFrame({
@@ -108,3 +112,24 @@ def test_build_fact_game_odds_cover_logic() -> None:
     wc_row = fact[fact["sport"] == "world_cup"].iloc[0]
     assert wc_row["home_score"] == 0
     assert wc_row["away_score"] == 2
+
+
+@mock_aws
+def test_upload_parquet_to_s3(monkeypatch: object) -> None:
+    """upload_parquet_to_s3 writes a Parquet file to the correct S3 key."""
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "testing")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "testing")
+    monkeypatch.setenv("AWS_REGION", "us-east-1")
+    monkeypatch.setenv("S3_BUCKET_NAME", "test-bucket")
+
+    s3 = boto3.client("s3", region_name="us-east-1")
+    s3.create_bucket(Bucket="test-bucket")
+
+    settings = Settings()
+    df = pd.DataFrame({"col_a": [1, 2], "col_b": ["x", "y"]})
+
+    s3_key = upload_parquet_to_s3(df, "silver/mlb/games.parquet", settings)
+
+    assert s3_key == "silver/mlb/games.parquet"
+    obj = s3.get_object(Bucket="test-bucket", Key=s3_key)
+    assert len(obj["Body"].read()) > 0
