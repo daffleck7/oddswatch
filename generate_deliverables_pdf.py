@@ -161,76 +161,144 @@ def build_pdf() -> None:
 
     pdf.ln(2)
     # ── Draw the architecture diagram programmatically ──
-    box_h = 14
+    box_h = 12
     y_start = pdf.get_y()
 
-    def draw_box(x: float, y: float, w: float, label: str,
-                 fill_r: int = 230, fill_g: int = 238, fill_b: int = 250):
+    def draw_box(x: float, y: float, w: float, h: float, label: str,
+                 fill_r: int = 230, fill_g: int = 238, fill_b: int = 250,
+                 font_size: int = 7, two_line: str = ""):
         pdf.set_fill_color(fill_r, fill_g, fill_b)
         pdf.set_draw_color(25, 60, 120)
-        pdf.set_line_width(0.4)
-        pdf.rect(x, y, w, box_h, "DF")
-        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_line_width(0.3)
+        pdf.rect(x, y, w, h, "DF")
+        pdf.set_font("Helvetica", "B", font_size)
         pdf.set_text_color(25, 60, 120)
-        pdf.set_xy(x, y + 2)
-        pdf.cell(w, box_h - 4, label, align="C")
+        if two_line:
+            pdf.set_xy(x, y + 1)
+            pdf.cell(w, h / 2 - 1, label, align="C")
+            pdf.set_font("Helvetica", "", font_size - 1)
+            pdf.set_text_color(80, 80, 80)
+            pdf.set_xy(x, y + h / 2)
+            pdf.cell(w, h / 2 - 1, two_line, align="C")
+        else:
+            pdf.set_xy(x, y + 1)
+            pdf.cell(w, h - 2, label, align="C")
 
-    def draw_arrow(x1: float, y1: float, x2: float, y2: float):
+    def draw_arrow_right(x1: float, y: float, x2: float):
         pdf.set_draw_color(100, 100, 100)
-        pdf.set_line_width(0.5)
-        pdf.line(x1, y1, x2, y2)
-        # Draw arrowhead as small lines at the endpoint
-        arrow_size = 2
-        if y2 > y1:  # vertical down arrow
-            pdf.line(x2, y2, x2 - arrow_size, y2 - arrow_size)
-            pdf.line(x2, y2, x2 + arrow_size, y2 - arrow_size)
-        else:  # horizontal right arrow
-            pdf.line(x2, y2, x2 - arrow_size, y2 - arrow_size)
-            pdf.line(x2, y2, x2 - arrow_size, y2 + arrow_size)
+        pdf.set_line_width(0.4)
+        pdf.line(x1, y, x2, y)
+        pdf.line(x2, y, x2 - 1.5, y - 1.5)
+        pdf.line(x2, y, x2 - 1.5, y + 1.5)
 
-    # Row 1: Data Sources
-    row1_y = y_start
-    draw_box(15, row1_y, 40, "FiveThirtyEight API", 255, 235, 205)
-    draw_box(65, row1_y, 40, "FIFA World Cup API", 255, 235, 205)
+    def draw_arrow_down(x: float, y1: float, y2: float):
+        pdf.set_draw_color(100, 100, 100)
+        pdf.set_line_width(0.4)
+        pdf.line(x, y1, x, y2)
+        pdf.line(x, y2, x - 1.5, y2 - 1.5)
+        pdf.line(x, y2, x + 1.5, y2 - 1.5)
 
-    # Row 2: Bronze
-    row2_y = row1_y + 24
-    draw_box(15, row2_y, 40, "MLB Ingest (httpx)", 255, 220, 200)
-    draw_box(65, row2_y, 40, "WC Ingest (httpx)", 255, 220, 200)
-    draw_box(120, row2_y, 52, "S3: bronze/ (CSV)", 205, 230, 210)
-    draw_arrow(35, row1_y + box_h, 35, row2_y)
-    draw_arrow(85, row1_y + box_h, 85, row2_y)
-    draw_arrow(55, row2_y + box_h / 2, 120, row2_y + box_h / 2)
-    draw_arrow(105, row2_y + box_h / 2, 120, row2_y + box_h / 2)
+    def draw_label(x: float, y: float, text: str):
+        pdf.set_font("Helvetica", "B", 6)
+        pdf.set_text_color(120, 120, 120)
+        pdf.set_xy(x, y)
+        pdf.cell(30, 4, text)
 
-    # Row 3: Silver
-    row3_y = row2_y + 24
-    draw_box(15, row3_y, 55, "bronze_to_silver Transform", 220, 220, 250)
-    draw_box(120, row3_y, 52, "S3: silver/ (Parquet)", 205, 230, 210)
-    draw_arrow(146, row2_y + box_h, 146, row3_y)
-    draw_arrow(70, row3_y + box_h / 2, 120, row3_y + box_h / 2)
+    # Column headers
+    draw_label(12, y_start - 1, "DATA SOURCES")
+    draw_label(62, y_start - 1, "PIPELINE")
+    draw_label(118, y_start - 1, "STORAGE")
+    draw_label(165, y_start - 1, "SERVING")
 
-    # Row 4: Gold
-    row4_y = row3_y + 24
-    draw_box(15, row4_y, 55, "silver_to_gold Star Schema", 220, 220, 250)
-    draw_box(120, row4_y, 52, "S3: gold/ (Parquet)", 205, 230, 210)
-    draw_arrow(146, row3_y + box_h, 146, row4_y)
-    draw_arrow(70, row4_y + box_h / 2, 120, row4_y + box_h / 2)
+    # Horizontal separator under headers
+    pdf.set_draw_color(200, 200, 200)
+    pdf.set_line_width(0.2)
+    pdf.line(10, y_start + 3, 195, y_start + 3)
 
-    # Row 5: Catalog
-    row5_y = row4_y + 24
-    draw_box(120, row5_y, 52, "AWS Glue Data Catalog", 230, 210, 240)
-    draw_arrow(146, row4_y + box_h, 146, row5_y)
+    # Row 1: Bronze
+    r1 = y_start + 6
+    rh = 14
+    draw_box(12, r1, 22, rh, "FiveThirtyEight", 255, 200, 130, 7, "MLB ELO")
+    draw_box(36, r1, 22, rh, "GitHub", 255, 200, 130, 7, "FIFA World Cup")
+    draw_arrow_right(58, r1 + rh / 2, 63)
+    draw_box(63, r1, 46, rh, "Ingest (httpx)", 255, 220, 200, 7, "Download + Upload to S3")
+    draw_arrow_right(109, r1 + rh / 2, 115)
+    draw_box(115, r1, 40, rh, "S3: bronze/", 205, 185, 145, 7, "CSV (raw)")
 
-    # Orchestrator box spanning left side
-    draw_box(15, row4_y + 24, 55, "Pipeline Orchestrator", 240, 240, 220)
+    # Bronze badge
+    pdf.set_fill_color(205, 170, 125)
+    pdf.rect(163, r1 + 1, 25, rh - 2, "DF")
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_xy(163, r1 + 2)
+    pdf.cell(25, rh - 4, "BRONZE", align="C")
 
-    # Row 6: Query
-    row6_y = row5_y + 24
-    draw_box(120, row6_y, 52, "Athena / SQL Queries", 240, 240, 220)
-    draw_arrow(146, row5_y + box_h, 146, row6_y)
+    # Arrow down
+    draw_arrow_down(135, r1 + rh, r1 + rh + 6)
 
-    pdf.set_y(row6_y + box_h + 8)
+    # Row 2: Silver
+    r2 = r1 + rh + 8
+    draw_box(63, r2, 46, rh, "bronze_to_silver", 200, 200, 240, 7,
+             "Normalize + Synth. odds")
+    draw_arrow_right(109, r2 + rh / 2, 115)
+    draw_box(115, r2, 40, rh, "S3: silver/", 180, 190, 210, 7,
+             "Parquet (SilverGame)")
+
+    # Silver badge
+    pdf.set_fill_color(150, 165, 195)
+    pdf.rect(163, r2 + 1, 25, rh - 2, "DF")
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_xy(163, r2 + 2)
+    pdf.cell(25, rh - 4, "SILVER", align="C")
+
+    # Arrow down
+    draw_arrow_down(135, r2 + rh, r2 + rh + 6)
+
+    # Row 3: Gold
+    r3 = r2 + rh + 8
+    draw_box(63, r3, 46, rh, "silver_to_gold", 200, 200, 240, 7,
+             "Star schema (4 dim + 1 fact)")
+    draw_arrow_right(109, r3 + rh / 2, 115)
+    draw_box(115, r3, 40, rh, "S3: gold/", 220, 190, 80, 7,
+             "Parquet (5 tables)")
+
+    # Gold badge
+    pdf.set_fill_color(200, 170, 50)
+    pdf.rect(163, r3 + 1, 25, rh - 2, "DF")
+    pdf.set_font("Helvetica", "B", 8)
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_xy(163, r3 + 2)
+    pdf.cell(25, rh - 4, "GOLD", align="C")
+
+    # Arrow down to serving
+    draw_arrow_down(135, r3 + rh, r3 + rh + 6)
+
+    # Row 4: Serving
+    r4 = r3 + rh + 8
+    draw_box(115, r4, 28, rh, "Glue Catalog", 210, 190, 230, 7)
+    draw_arrow_right(143, r4 + rh / 2, 150)
+    draw_box(150, r4, 28, rh, "Athena SQL", 210, 190, 230, 7)
+
+    # dbt box (left side, aligned with gold row)
+    draw_box(12, r3, 28, rh, "dbt Project", 60, 160, 100, 7, "7 models / 45 tests")
+    pdf.set_font("Helvetica", "", 6)
+    pdf.set_text_color(100, 100, 100)
+    pdf.set_xy(41, r3 + 3)
+    pdf.cell(20, 8, "reads Glue")
+    draw_arrow_right(42, r3 + rh / 2, 63)
+
+    # Orchestrator
+    draw_box(12, r4, 40, rh, "Pipeline Orchestrator", 240, 240, 220, 7, "(pipeline.py)")
+
+    # Footer
+    pdf.set_y(r4 + rh + 4)
+    pdf.set_font("Helvetica", "I", 7)
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 4, "Format: CSV (bronze) | Parquet with Snappy (silver, gold)   "
+             "Catalog: AWS Glue Data Catalog   Pattern: Medallion Lakehouse",
+             new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.ln(4)
 
     pdf.sub_heading("1.3  Component Summary")
     components = [
@@ -358,6 +426,96 @@ def build_pdf() -> None:
         "one central fact table. This design optimizes for analytical queries such as "
         "'What percentage of home favorites covered the spread on weekends?'"
     )
+
+    # ── Draw star schema diagram ──
+    schema_y = pdf.get_y() + 2
+
+    def schema_box(x: float, y: float, w: float, h: float, title: str,
+                   cols: list[str], fill_r: int, fill_g: int, fill_b: int,
+                   title_r: int = 25, title_g: int = 60, title_b: int = 120):
+        pdf.set_fill_color(fill_r, fill_g, fill_b)
+        pdf.set_draw_color(title_r, title_g, title_b)
+        pdf.set_line_width(0.4)
+        pdf.rect(x, y, w, h, "DF")
+        # Title
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(title_r, title_g, title_b)
+        pdf.set_xy(x + 1, y + 1)
+        pdf.cell(w - 2, 5, title, align="C")
+        # Separator line
+        pdf.set_draw_color(180, 180, 180)
+        pdf.set_line_width(0.2)
+        pdf.line(x + 2, y + 7, x + w - 2, y + 7)
+        # Columns
+        pdf.set_font("Helvetica", "", 6)
+        pdf.set_text_color(60, 60, 60)
+        for i, col in enumerate(cols):
+            pdf.set_xy(x + 2, y + 8 + i * 4)
+            if "(PK)" in col or "(FK)" in col:
+                pdf.set_font("Helvetica", "B", 6)
+                pdf.set_text_color(70, 130, 200)
+            else:
+                pdf.set_font("Helvetica", "", 6)
+                pdf.set_text_color(60, 60, 60)
+            pdf.cell(w - 4, 4, col)
+
+    # Central fact table
+    fact_x, fact_y = 68, schema_y + 12
+    fact_w, fact_h = 55, 52
+    schema_box(fact_x, fact_y, fact_w, fact_h, "FactGameOdds",
+               ["game_key (FK)", "date_key (FK)", "home_team_key (FK)",
+                "away_team_key (FK)", "sport", "closing_spread | closing_total",
+                "moneyline_home | moneyline_away",
+                "home_score | away_score",
+                "cover (bool) | over_under_result"],
+               255, 243, 215, 200, 130, 40)
+
+    # DimTeam - top left
+    schema_box(10, schema_y, 48, 24, "DimTeam",
+               ["team_key (PK)", "team_id | team_name", "sport"],
+               220, 232, 250)
+    # Arrow from DimTeam to fact
+    draw_arrow_right(58, schema_y + 12, fact_x)
+
+    # DimDate - top right
+    schema_box(133, schema_y, 48, 28, "DimDate",
+               ["date_key (PK)", "date | day_of_week", "month | year", "is_weekend"],
+               220, 232, 250)
+    # Arrow from DimDate to fact (leftward)
+    pdf.set_draw_color(100, 100, 100)
+    pdf.set_line_width(0.4)
+    pdf.line(133, schema_y + 14, fact_x + fact_w, schema_y + 14)
+    pdf.line(fact_x + fact_w, schema_y + 14, fact_x + fact_w + 1.5, schema_y + 14 - 1.5)
+    pdf.line(fact_x + fact_w, schema_y + 14, fact_x + fact_w + 1.5, schema_y + 14 + 1.5)
+
+    # DimGame - bottom left
+    schema_box(10, schema_y + 40, 48, 28, "DimGame",
+               ["game_key (PK)", "game_id | sport | season", "date | stage | venue",
+                "home_team_key | away_team_key"],
+               220, 232, 250)
+    draw_arrow_right(58, schema_y + 54, fact_x)
+
+    # DimMarket - bottom right
+    schema_box(133, schema_y + 44, 48, 20, "DimMarket (static)",
+               ["market_key (PK)", "spread | total | moneyline"],
+               220, 232, 250)
+    pdf.set_draw_color(100, 100, 100)
+    pdf.set_line_width(0.4)
+    pdf.line(133, schema_y + 54, fact_x + fact_w, schema_y + 54)
+    pdf.line(fact_x + fact_w, schema_y + 54, fact_x + fact_w + 1.5, schema_y + 54 - 1.5)
+    pdf.line(fact_x + fact_w, schema_y + 54, fact_x + fact_w + 1.5, schema_y + 54 + 1.5)
+
+    pdf.set_y(schema_y + 72)
+    pdf.set_font("Helvetica", "I", 7)
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 4, "Star schema: 4 dimension tables surround 1 central fact table  |  "
+             "13 fact columns  |  Derived metrics: cover, over_under_result",
+             new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.ln(4)
+
+    # Column detail tables on next page
+    pdf.add_page()
+    pdf.sub_heading("2.4.1  Gold Table Column Details")
 
     pdf.set_font("Helvetica", "B", 10)
     pdf.cell(0, 7, "DimTeam", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
