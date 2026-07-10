@@ -1,0 +1,116 @@
+version: 2
+
+models:
+  - name: dim_team
+    description: "Team dimension table with surrogate keys"
+    columns:
+      - name: team_key
+        description: "Surrogate key for team"
+        tests:
+          - not_null
+          - unique
+      - name: team_id
+        description: "Derived team identifier (lowercase, underscores)"
+        tests:
+          - not_null
+      - name: team_name
+        description: "Display name of the team"
+        tests:
+          - not_null
+      - name: sport
+        description: "Sport (mlb or world_cup)"
+        tests:
+          - accepted_values:
+              values: ['mlb', 'world_cup']
+
+  - name: dim_game
+    description: "Game dimension table linking teams, dates, and game metadata"
+    columns:
+      - name: game_key
+        description: "Surrogate key for game"
+        tests:
+          - not_null
+          - unique
+      - name: game_id
+        description: "Natural key from the silver layer"
+        tests:
+          - not_null
+          - unique
+      - name: home_team_key
+        description: "Foreign key to dim_team"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_team')
+              field: team_key
+      - name: away_team_key
+        description: "Foreign key to dim_team"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_team')
+              field: team_key
+
+  - name: dim_date
+    description: "Date dimension with calendar attributes"
+    columns:
+      - name: date_key
+        description: "Surrogate key for date"
+        tests:
+          - not_null
+          - unique
+      - name: date
+        description: "Calendar date"
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_market
+    description: "Static market type dimension (spread, total, moneyline)"
+    columns:
+      - name: market_key
+        description: "Surrogate key for market type"
+        tests:
+          - not_null
+          - unique
+      - name: market_type
+        description: "Market type name"
+        tests:
+          - accepted_values:
+              values: ['spread', 'total', 'moneyline']
+
+  - name: fact_game_odds
+    description: "Central fact table with closing odds, scores, and derived betting metrics"
+    columns:
+      - name: game_key
+        description: "Foreign key to dim_game"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_game')
+              field: game_key
+      - name: date_key
+        description: "Foreign key to dim_date"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: home_team_key
+        description: "Foreign key to dim_team"
+        tests:
+          - not_null
+      - name: away_team_key
+        description: "Foreign key to dim_team"
+        tests:
+          - not_null
+      - name: sport
+        description: "Sport degenerate dimension"
+        tests:
+          - accepted_values:
+              values: ['mlb', 'world_cup']
+      - name: over_under_result
+        description: "Whether the game went over, under, or push"
+        tests:
+          - accepted_values:
+              values: ['over', 'under', 'push']

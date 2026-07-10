@@ -1,0 +1,19 @@
+name: oddswatch
+version: "1.0.0"
+config-version: 2
+
+profile: oddswatch
+
+model-paths: ["models"]
+test-paths: ["models"]
+
+models:
+  oddswatch:
+    staging:
+      +materialized: view
+      +schema: oddswatch
+    gold:
+      +materialized: table
+      +schema: oddswatch
+      +file_format: parquet
+      +s3_data_dir: "s3://oddswatch-data/dbt_gold/"

@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: oddswatch
+    database: awsdatacatalog
+    schema: oddswatch
+    tables:
+      - name: silver_mlb
+        description: "Silver-layer MLB games from FiveThirtyEight ELO dataset"
+      - name: silver_world_cup
+        description: "Silver-layer FIFA World Cup matches"

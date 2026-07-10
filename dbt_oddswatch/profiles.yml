@@ -1,0 +1,14 @@
+oddswatch:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      s3_staging_dir: "s3://oddswatch-data/dbt_staging/"
+      s3_data_dir: "s3://oddswatch-data/dbt_gold/"
+      region_name: "{{ env_var('AWS_REGION', 'us-east-1') }}"
+      database: awsdatacatalog
+      schema: oddswatch
+      work_group: primary
+      aws_access_key_id: "{{ env_var('AWS_ACCESS_KEY_ID') }}"
+      aws_secret_access_key: "{{ env_var('AWS_SECRET_ACCESS_KEY') }}"
+      threads: 4

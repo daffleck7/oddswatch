@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: stg_mlb_games
+    description: "Staging model for MLB games from the silver layer"
+    columns:
+      - name: game_id
+        description: "Unique game identifier"
+        tests:
+          - not_null
+          - unique
+      - name: sport
+        description: "Sport identifier"
+        tests:
+          - accepted_values:
+              values: ['mlb']
+      - name: home_score
+        tests:
+          - not_null
+      - name: away_score
+        tests:
+          - not_null
+
+  - name: stg_world_cup_games
+    description: "Staging model for FIFA World Cup matches from the silver layer"
+    columns:
+      - name: game_id
+        description: "Unique game identifier"
+        tests:
+          - not_null
+          - unique
+      - name: sport
+        description: "Sport identifier"
+        tests:
+          - accepted_values:
+              values: ['world_cup']
+      - name: home_score
+        tests:
+          - not_null
+      - name: away_score
+        tests:
+          - not_null
