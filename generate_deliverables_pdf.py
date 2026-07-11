@@ -117,13 +117,13 @@ def build_pdf() -> None:
 
     # ── TITLE PAGE ──────────────────────────────────────────────
     pdf.add_page()
-    pdf.ln(50)
+    pdf.ln(40)
     pdf.set_font("Helvetica", "B", 28)
     pdf.set_text_color(25, 60, 120)
     pdf.cell(0, 14, "OddsWatch", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.set_font("Helvetica", "", 14)
     pdf.set_text_color(80, 80, 80)
-    pdf.cell(0, 10, "Real-Time Sports Betting Odds & Line-Movement Platform", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(0, 10, "Sports Betting Odds Analytics Platform", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.ln(8)
     pdf.set_draw_color(25, 60, 120)
     pdf.line(60, pdf.get_y(), 150, pdf.get_y())
@@ -131,16 +131,96 @@ def build_pdf() -> None:
     pdf.set_font("Helvetica", "", 12)
     pdf.set_text_color(60, 60, 60)
     pdf.cell(0, 8, "MGMT 59000 - Cloud Data Engineering", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
-    pdf.cell(0, 8, "Final Project Deliverables", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(0, 8, "Final Project Document", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.ln(6)
-    pdf.cell(0, 8, "Danny Affleck", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Team 2", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_font("Helvetica", "", 12)
+    pdf.cell(0, 8, "Danny Affleck, Aadi Gupta, Ken Nanayama", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.ln(4)
     pdf.cell(0, 8, "July 2026", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
-    # ── 1  ARCHITECTURE DIAGRAM + PATTERN JUSTIFICATION ────────
+    # ── SECTION: Problem / Business Use Case ──────────────────
     pdf.add_page()
-    pdf.section_title("1", "Architecture Diagram & Pattern Justification")
+    pdf.section_title("1", "Problem / Business Use Case & Objectives")
 
-    pdf.sub_heading("1.1  Pattern: Medallion Lakehouse Architecture")
+    pdf.sub_heading("1.1  Business Problem")
+    pdf.body_text(
+        "Sports betting generates billions of dollars in annual handle, yet most bettors "
+        "and analysts lack access to structured, queryable historical odds data. Closing "
+        "lines, spreads, and totals are scattered across proprietary sportsbook feeds with "
+        "no unified schema, making it difficult to perform cross-sport analysis such as "
+        "home-team cover rates, over/under trends, or moneyline value identification."
+    )
+
+    pdf.sub_heading("1.2  Project Objectives")
+    pdf.bullet("Build a cloud-native analytics platform that ingests sports results from "
+               "multiple public sources and normalizes them into a unified schema.")
+    pdf.bullet("Generate synthetic but realistic closing odds (spread, total, moneyline) "
+               "grounded in actual game outcomes for analytical use.")
+    pdf.bullet("Transform the unified data into a star schema optimized for ad-hoc "
+               "analytical queries via AWS Athena.")
+    pdf.bullet("Demonstrate a partial cloud deployment using dbt on Athena with automated "
+               "data quality testing.")
+    pdf.bullet("Document architecture decisions, cost trade-offs, and scalability limits "
+               "as required by the course rubric.")
+    pdf.ln(2)
+
+    pdf.sub_heading("1.3  Success Criteria")
+    pdf.bullet("End-to-end pipeline runs without errors: ingest, transform, upload, catalog.")
+    pdf.bullet("Star schema queryable in Athena with correct FK relationships.")
+    pdf.bullet("dbt project compiles, materializes 7 models, and passes all 45 data quality tests.")
+    pdf.bullet("All five rubric deliverables documented with supporting evidence.")
+
+    # ── SECTION: Data Description ─────────────────────────────
+    pdf.add_page()
+    pdf.section_title("2", "Data Description, Sources & Key Assumptions")
+
+    pdf.sub_heading("2.1  Data Sources")
+    pdf.body_text(
+        "OddsWatch ingests data from two public, freely available sources:"
+    )
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(40, 40, 40)
+    pdf.cell(0, 6, "Source 1: FiveThirtyEight MLB ELO Dataset", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.multi_cell(0, 5.5,
+        "URL: https://datahub.io/fivethirtyeight/mlb-elo/_r/-/data/mlb_elo.csv\n"
+        "Format: CSV  |  Size: ~12 MB  |  Rows: ~230,000\n"
+        "Coverage: Every MLB regular season and playoff game from 1871 to present.\n"
+        "Columns used: date, season, neutral, playoff, team1, team2, score1, score2.")
+    pdf.ln(3)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(40, 40, 40)
+    pdf.cell(0, 6, "Source 2: International Football Results (GitHub)", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.multi_cell(0, 5.5,
+        "URL: https://github.com/martj42/international_results/blob/master/results.csv\n"
+        "Format: CSV  |  Size: ~2 MB (filtered to ~80 KB)  |  Rows: ~1,000 (FIFA World Cup)\n"
+        "Coverage: All FIFA World Cup matches from 1930 to present.\n"
+        "Columns used: date, home_team, away_team, home_score, away_score, tournament, city, country.")
+    pdf.ln(4)
+
+    pdf.sub_heading("2.2  Key Assumptions")
+    pdf.bullet("Closing odds are not available in the public datasets. Synthetic odds are "
+               "generated deterministically from actual game outcomes using seeded random noise. "
+               "This is clearly documented and acceptable for demonstrating the analytics pipeline.")
+    pdf.bullet("Spreads are centered on the negative score differential with uniform noise "
+               "in [-2.5, +2.5], rounded to half-point precision. Totals follow the same approach "
+               "with a floor of 0.5.")
+    pdf.bullet("Moneylines are derived from spreads using a linear conversion "
+               "(1 point of spread ~ 15 moneyline points, baseline -110).")
+    pdf.bullet("The pipeline runs in batch mode (daily cadence). Real-time streaming of "
+               "live odds is a planned future extension, with DimBook and FactOddsTick models "
+               "already defined in the data model.")
+    pdf.bullet("All data is public and freely available. No API keys or authentication "
+               "are required for data access.")
+
+    # ── Renumber remaining sections (was 1-6, now 3-8) ────────
+    pdf.add_page()
+    pdf.section_title("3", "Architecture Diagram & Pattern Justification")
+
+    pdf.sub_heading("3.1  Pattern: Medallion Lakehouse Architecture")
     pdf.body_text(
         "OddsWatch follows a Medallion Lakehouse architecture (Bronze / Silver / Gold) "
         "running on AWS. This pattern was chosen because the project ingests semi-structured "
@@ -153,7 +233,7 @@ def build_pdf() -> None:
         "streaming layer."
     )
 
-    pdf.sub_heading("1.2  Architecture Diagram")
+    pdf.sub_heading("3.2  Architecture Diagram")
     pdf.body_text(
         "The following diagram shows the end-to-end data flow through the OddsWatch system. "
         "Each box represents a component in the pipeline; arrows indicate data movement."
@@ -300,7 +380,7 @@ def build_pdf() -> None:
              new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.ln(4)
 
-    pdf.sub_heading("1.3  Component Summary")
+    pdf.sub_heading("3.3  Component Summary")
     components = [
         ("Ingestion (httpx)", "Downloads raw data from FiveThirtyEight (MLB ELO) and GitHub "
          "(FIFA World Cup results) via HTTP, uploads as CSV to S3 bronze layer."),
@@ -326,7 +406,7 @@ def build_pdf() -> None:
         pdf.multi_cell(0, 5, desc)
         pdf.ln(2)
 
-    pdf.sub_heading("1.4  Why Lakehouse Over Alternatives")
+    pdf.sub_heading("3.4  Why Lakehouse Over Alternatives")
     pdf.body_text(
         "Lambda Architecture was considered but rejected because OddsWatch currently runs "
         "as a batch-only pipeline. Maintaining separate batch and speed layers would add "
@@ -338,9 +418,9 @@ def build_pdf() -> None:
 
     # ── 2  DATA MODEL + SCHEMA + SCD STRATEGY ─────────────────
     pdf.add_page()
-    pdf.section_title("2", "Data Model, Schema & SCD Strategy")
+    pdf.section_title("4", "Data Model, Schema & SCD Strategy")
 
-    pdf.sub_heading("2.1  Three-Layer Schema Overview")
+    pdf.sub_heading("4.1  Three-Layer Schema Overview")
     pdf.body_text(
         "Data progresses through three layers. Each layer has a distinct purpose: Bronze "
         "preserves raw fidelity, Silver normalizes and enriches, and Gold optimizes for "
@@ -348,7 +428,7 @@ def build_pdf() -> None:
     )
 
     # Bronze table
-    pdf.sub_heading("2.2  Bronze Layer (Raw Ingestion)")
+    pdf.sub_heading("4.2  Bronze Layer (Raw Ingestion)")
     pdf.body_text(
         "Two source-specific schemas, stored as CSV. No transformations applied."
     )
@@ -390,7 +470,7 @@ def build_pdf() -> None:
     # Silver table — needs ~100mm for heading + 15 rows; start new page if tight
     if pdf.get_y() > 170:
         pdf.add_page()
-    pdf.sub_heading("2.3  Silver Layer (Unified & Enriched)")
+    pdf.sub_heading("4.3  Silver Layer (Unified & Enriched)")
     pdf.body_text(
         "Both sources are normalized into a single SilverGame schema (14 columns). "
         "Synthetic closing odds are generated deterministically from actual game outcomes "
@@ -420,7 +500,7 @@ def build_pdf() -> None:
 
     # Gold tables
     pdf.add_page()
-    pdf.sub_heading("2.4  Gold Layer (Star Schema)")
+    pdf.sub_heading("4.4  Gold Layer (Star Schema)")
     pdf.body_text(
         "The gold layer implements a star schema with four dimension tables surrounding "
         "one central fact table. This design optimizes for analytical queries such as "
@@ -515,7 +595,7 @@ def build_pdf() -> None:
 
     # Column detail tables on next page
     pdf.add_page()
-    pdf.sub_heading("2.4.1  Gold Table Column Details")
+    pdf.sub_heading("4.4.1  Gold Table Column Details")
 
     pdf.set_font("Helvetica", "B", 10)
     pdf.cell(0, 7, "DimTeam", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
@@ -596,7 +676,7 @@ def build_pdf() -> None:
     pdf.ln(6)
 
     # SCD strategy
-    pdf.sub_heading("2.5  Slowly Changing Dimension (SCD) Strategy")
+    pdf.sub_heading("4.5  Slowly Changing Dimension (SCD) Strategy")
     pdf.body_text(
         "The following SCD strategies are applied to each dimension table:"
     )
@@ -632,7 +712,7 @@ def build_pdf() -> None:
 
     # ── 3  AWS vs. GCP TOOL MEMO ──────────────────────────────
     pdf.add_page()
-    pdf.section_title("3", "AWS vs. GCP Service Mapping Memo")
+    pdf.section_title("5", "Tool-Selection Rationale: AWS vs. GCP")
 
     pdf.body_text(
         "This memo maps each pipeline component to its AWS service (used in the current "
@@ -654,9 +734,9 @@ def build_pdf() -> None:
         ("SQL Analytics", "Amazon Athena", "BigQuery", "Athena is serverless, pay-per-query, "
          "and reads directly from S3+Glue Catalog. No data loading step required."),
         ("Orchestration", "Step Functions", "Cloud Composer", "Step Functions integrates "
-         "natively with Glue and Lambda for serverless orchestration of the batch pipeline."),
+         "natively with Glue and Lambda for serverless batch orchestration."),
         ("Compute", "AWS Lambda", "Cloud Functions", "Lambda handles lightweight ingestion "
-         "tasks (HTTP downloads, S3 uploads) within the 15-min/10GB limits."),
+         "(HTTP downloads, S3 uploads) within 15-min/10GB limits."),
         ("Streaming*", "Kinesis Data Streams", "Pub/Sub", "Kinesis integrates with Glue "
          "Streaming and Lambda for future real-time odds ingestion."),
         ("IAM & Security", "AWS IAM", "Cloud IAM", "IAM roles and policies control access "
@@ -671,7 +751,7 @@ def build_pdf() -> None:
     pdf.cell(0, 5, "* Streaming component is planned for future implementation.", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
     pdf.ln(4)
 
-    pdf.sub_heading("3.1  Why AWS Over GCP")
+    pdf.sub_heading("5.1  Why AWS Over GCP")
     pdf.body_text(
         "AWS was selected for three reasons: (1) the S3 + Glue + Athena stack provides a "
         "tightly integrated, serverless analytics platform that requires minimal infrastructure "
@@ -683,14 +763,14 @@ def build_pdf() -> None:
 
     # ── 4  CLOUD COST ESTIMATE ────────────────────────────────
     pdf.add_page()
-    pdf.section_title("4", "Cloud Cost Estimate")
+    pdf.section_title("6", "Cloud Cost Estimate")
 
     pdf.body_text(
         "Back-of-envelope cost estimate based on current data volumes and a daily batch "
         "pipeline cadence. All prices are us-east-1 on-demand rates as of mid-2026."
     )
 
-    pdf.sub_heading("4.1  Data Volume Assumptions")
+    pdf.sub_heading("6.1  Data Volume Assumptions")
     pdf.bullet("MLB ELO dataset: ~230,000 rows, ~12 MB CSV, ~3 MB Parquet")
     pdf.bullet("World Cup dataset: ~1,000 rows, ~80 KB CSV, ~25 KB Parquet")
     pdf.bullet("Gold layer (all 5 tables): ~5 MB Parquet total")
@@ -698,7 +778,7 @@ def build_pdf() -> None:
     pdf.bullet("Pipeline runs: 1x daily (batch)")
     pdf.ln(2)
 
-    pdf.sub_heading("4.2  Monthly Cost Breakdown")
+    pdf.sub_heading("6.2  Monthly Cost Breakdown")
     widths_cost = [55, 50, 40, 40]
     pdf.table_row(["Service", "Usage", "Unit Price", "Monthly Cost"],
                   widths_cost, bold=True)
@@ -727,7 +807,7 @@ def build_pdf() -> None:
         "scanning and S3 storage, both of which are addressed in the scale analysis below."
     )
 
-    pdf.sub_heading("4.3  Cost at 10x Scale")
+    pdf.sub_heading("6.3  Cost at 10x Scale")
     pdf.body_text(
         "At 10x data volume (~200 MB total storage, ~2.3M rows), monthly costs remain "
         "under $5.00. Athena becomes the primary cost driver at $5/TB scanned. "
@@ -739,7 +819,7 @@ def build_pdf() -> None:
 
     # ── 5  SCALE ANALYSIS ─────────────────────────────────────
     pdf.add_page()
-    pdf.section_title("5", "Scale Analysis: What Breaks at 10x")
+    pdf.section_title("7", "Scale Analysis: What Breaks at 10x")
 
     pdf.body_text(
         "This section analyzes what components of the OddsWatch pipeline would degrade or "
@@ -747,7 +827,7 @@ def build_pdf() -> None:
         "bottleneck can be resolved."
     )
 
-    pdf.sub_heading("5.1  Ingestion Layer")
+    pdf.sub_heading("7.1  Ingestion Layer")
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(40, 40, 40)
     pdf.cell(0, 6, "Current: Single-threaded HTTP download via httpx", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
@@ -763,7 +843,7 @@ def build_pdf() -> None:
     pdf.bullet("Add incremental ingestion: track last-ingested date, only fetch new records.")
     pdf.ln(2)
 
-    pdf.sub_heading("5.2  Transform Layer")
+    pdf.sub_heading("7.2  Transform Layer")
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(40, 40, 40)
     pdf.cell(0, 6, "Current: In-memory pandas DataFrames, single-process", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
@@ -781,7 +861,7 @@ def build_pdf() -> None:
     pdf.bullet("Partition output Parquet by sport and season for parallel write.")
     pdf.ln(2)
 
-    pdf.sub_heading("5.3  Storage Layer")
+    pdf.sub_heading("7.3  Storage Layer")
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(40, 40, 40)
     pdf.cell(0, 6, "Current: Single Parquet file per table, no partitioning", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
@@ -797,7 +877,7 @@ def build_pdf() -> None:
     pdf.bullet("Register partition keys in Glue Catalog for Athena partition pruning.")
     pdf.ln(2)
 
-    pdf.sub_heading("5.4  Catalog & Query Layer")
+    pdf.sub_heading("7.4  Catalog & Query Layer")
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(40, 40, 40)
     pdf.cell(0, 6, "Current: Glue Catalog with unpartitioned tables", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
@@ -814,7 +894,7 @@ def build_pdf() -> None:
                "time-travel queries at warehouse scale.")
     pdf.ln(2)
 
-    pdf.sub_heading("5.5  Orchestration")
+    pdf.sub_heading("7.5  Orchestration")
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(40, 40, 40)
     pdf.cell(0, 6, "Current: Single-function pipeline.py running locally", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
@@ -832,7 +912,7 @@ def build_pdf() -> None:
                "ingestion can run concurrently).")
     pdf.ln(4)
 
-    pdf.sub_heading("5.6  Summary Table")
+    pdf.sub_heading("7.6  Summary Table")
     widths_scale = [35, 55, 55, 40]
     pdf.table_row(["Component", "Breaks At", "Symptom", "Fix"],
                   widths_scale, bold=True)
@@ -848,7 +928,7 @@ def build_pdf() -> None:
 
     # ── 6  DOMINANT DIMENSION (Slide 42 Question) ─────────────
     pdf.add_page()
-    pdf.section_title("6", "Trade-Off Analysis: Dominant Dimension")
+    pdf.section_title("8", "Trade-Off Analysis: Dominant Dimension")
 
     pdf.body_text(
         "Per the Session 7 framework, every system has a dominant design dimension. "
@@ -857,7 +937,7 @@ def build_pdf() -> None:
         "analysis is as follows:"
     )
 
-    pdf.sub_heading("6.1  Dominant Dimension: Streaming")
+    pdf.sub_heading("8.1  Dominant Dimension: Streaming")
     pdf.body_text(
         "The core value proposition of OddsWatch is tracking odds movement over time. "
         "While the current implementation is batch-only, the system is designed to evolve "
@@ -867,7 +947,7 @@ def build_pdf() -> None:
         "odds updates with low latency. This makes Streaming the dominant dimension."
     )
 
-    pdf.sub_heading("6.2  Dimensions Sacrificed")
+    pdf.sub_heading("8.2  Dimensions Sacrificed")
 
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(40, 40, 40)
@@ -889,7 +969,7 @@ def build_pdf() -> None:
         "materialized views."
     )
 
-    pdf.sub_heading("6.3  Dimensions Preserved (But Not Dominant)")
+    pdf.sub_heading("8.3  Dimensions Preserved (But Not Dominant)")
 
     pdf.set_font("Helvetica", "B", 10)
     pdf.set_text_color(40, 40, 40)
@@ -909,8 +989,174 @@ def build_pdf() -> None:
         "first optimization, but it is not a current design constraint."
     )
 
+    # ── 9  PARTIAL DEPLOYMENT EVIDENCE ──────────────────────────
+    pdf.add_page()
+    pdf.section_title("9", "Partial Deployment Evidence")
+
+    pdf.sub_heading("9.1  dbt Project on AWS Athena")
+    pdf.body_text(
+        "The partial cloud deployment uses dbt (Data Build Tool) with the dbt-athena-community "
+        "adapter to materialize the gold star schema as queryable tables in AWS Athena. "
+        "The dbt project reads from the existing Glue Catalog silver tables and builds all "
+        "gold models with automated data quality testing."
+    )
+
+    pdf.sub_heading("9.2  Project Structure")
+    pdf.set_font("Courier", "", 9)
+    pdf.set_text_color(40, 40, 40)
+    structure = (
+        "dbt_oddswatch/\n"
+        "  dbt_project.yml             Project config (Athena adapter)\n"
+        "  profiles.yml                Connection config (S3, Glue, region)\n"
+        "  models/\n"
+        "    staging/\n"
+        "      sources.yml             Declares silver_mlb, silver_world_cup\n"
+        "      stg_mlb_games.sql       Staging view for MLB data\n"
+        "      stg_world_cup_games.sql Staging view for World Cup data\n"
+        "      schema.yml              Tests for staging models\n"
+        "    gold/\n"
+        "      dim_team.sql            Team dimension\n"
+        "      dim_game.sql            Game dimension\n"
+        "      dim_date.sql            Date dimension\n"
+        "      dim_market.sql          Market type dimension (static)\n"
+        "      fact_game_odds.sql      Central fact table\n"
+        "      schema.yml              Tests for gold models"
+    )
+    pdf.multi_cell(0, 4.5, structure)
+    pdf.ln(4)
+
+    pdf.sub_heading("9.3  Model Summary")
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(40, 40, 40)
+    widths_dbt = [50, 30, 105]
+    pdf.table_row(["Model", "Type", "Description"], widths_dbt, bold=True)
+    for model, mtype, desc in [
+        ("stg_mlb_games", "View", "Reads from silver_mlb Glue table"),
+        ("stg_world_cup_games", "View", "Reads from silver_world_cup Glue table"),
+        ("dim_team", "Table", "Unique teams with surrogate keys"),
+        ("dim_game", "Table", "Game metadata with FK to DimTeam"),
+        ("dim_date", "Table", "Calendar attributes for each game date"),
+        ("dim_market", "Table", "Static: spread, total, moneyline"),
+        ("fact_game_odds", "Table", "Odds, scores, cover, over/under result"),
+    ]:
+        pdf.table_row([model, mtype, desc], widths_dbt)
+    pdf.ln(4)
+
+    pdf.sub_heading("9.4  Data Quality Tests (45 total)")
+    pdf.bullet("Surrogate key tests: not_null and unique on all PK columns (team_key, "
+               "game_key, date_key, market_key).")
+    pdf.bullet("Foreign key tests: relationships tests validating fact_game_odds.game_key "
+               "references dim_game.game_key, etc.")
+    pdf.bullet("Domain tests: accepted_values on sport (mlb, world_cup), market_type "
+               "(spread, total, moneyline), and over_under_result (over, under, push).")
+    pdf.bullet("Completeness tests: not_null on all score and odds columns.")
+    pdf.ln(2)
+
+    pdf.sub_heading("9.5  Execution Commands")
+    pdf.body_text(
+        "The dbt project is executed from the dbt_oddswatch/ directory with AWS credentials "
+        "set as environment variables:"
+    )
+    pdf.set_font("Courier", "", 9)
+    pdf.set_text_color(40, 40, 40)
+    pdf.multi_cell(0, 4.5,
+        "$ dbt run --profiles-dir .     # Materializes 7 models in Athena\n"
+        "$ dbt test --profiles-dir .    # Runs 45 data quality tests\n"
+        "\n"
+        "Parse result: Found 7 models, 45 data tests, 2 sources, 501 macros")
+    pdf.ln(4)
+
+    pdf.sub_heading("9.6  Sample Athena Query: Star Schema in Action")
+    pdf.body_text(
+        "The following query demonstrates the star schema by joining the fact table with "
+        "dimension tables to answer: What percentage of MLB home favorites covered the "
+        "spread on weekends?"
+    )
+    pdf.set_font("Courier", "", 8)
+    pdf.set_text_color(40, 40, 40)
+    pdf.multi_cell(0, 4,
+        "SELECT\n"
+        "    d.is_weekend,\n"
+        "    COUNT(*)                                        AS total_games,\n"
+        "    SUM(CASE WHEN f.cover THEN 1 ELSE 0 END)       AS home_covers,\n"
+        "    ROUND(\n"
+        "      100.0 * SUM(CASE WHEN f.cover THEN 1 ELSE 0 END)\n"
+        "      / COUNT(*), 1\n"
+        "    )                                               AS cover_pct\n"
+        "FROM oddswatch.fact_game_odds   f\n"
+        "JOIN oddswatch.dim_date         d  ON f.date_key = d.date_key\n"
+        "WHERE f.sport = 'mlb'\n"
+        "  AND f.closing_spread < 0          -- home team is favored\n"
+        "GROUP BY d.is_weekend\n"
+        "ORDER BY d.is_weekend;")
+    pdf.ln(3)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(40, 40, 40)
+    pdf.cell(0, 6, "Expected Result:", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    widths_q = [30, 30, 35, 30]
+    pdf.table_row(["is_weekend", "total_games", "home_covers", "cover_pct"],
+                  widths_q, bold=True)
+    pdf.table_row(["false", "~58,000", "~29,500", "~50.8%"], widths_q)
+    pdf.table_row(["true", "~32,000", "~16,300", "~50.9%"], widths_q)
+    pdf.ln(2)
+    pdf.set_font("Helvetica", "I", 9)
+    pdf.set_text_color(100, 100, 100)
+    pdf.multi_cell(0, 4.5,
+        "This query joins FactGameOdds with DimDate, filters to MLB home favorites "
+        "(negative spread), and groups by weekend status. The result shows that home "
+        "favorites cover at roughly the same rate on weekdays vs weekends, consistent "
+        "with efficient market pricing in the synthetic odds model.")
+    pdf.ln(4)
+
+    # ── 10  REPOSITORY & RESOURCE LINKS ───────────────────────
+    pdf.add_page()
+    pdf.section_title("10", "Repository & Resource Links")
+
+    pdf.sub_heading("10.1  GitHub Repository")
+    pdf.body_text("https://github.com/daffleck7/oddswatch")
+    pdf.body_text(
+        "The repository contains the complete source code for the OddsWatch platform, "
+        "including the batch pipeline, dbt project, deliverables PDF, and presentation slides."
+    )
+
+    pdf.sub_heading("10.2  Repository Structure")
+    pdf.set_font("Courier", "", 9)
+    pdf.set_text_color(40, 40, 40)
+    pdf.multi_cell(0, 4.5,
+        "src/oddswatch/           Python batch pipeline\n"
+        "  ingest/                MLB and World Cup data downloaders\n"
+        "  models/                Pydantic models (bronze, silver, gold)\n"
+        "  transform/             Bronze-to-silver, silver-to-gold transforms\n"
+        "  catalog/               Glue Data Catalog registration\n"
+        "  config/                Settings (env var loading)\n"
+        "  pipeline.py            End-to-end orchestrator\n"
+        "dbt_oddswatch/           dbt partial deployment\n"
+        "tests/                   pytest test suite\n"
+        "docs/                    Deliverables PDF and presentation")
+    pdf.ln(4)
+
+    pdf.sub_heading("10.3  Data Source URLs")
+    pdf.bullet("MLB ELO: https://datahub.io/fivethirtyeight/mlb-elo/_r/-/data/mlb_elo.csv")
+    pdf.bullet("World Cup: https://github.com/martj42/international_results/blob/master/results.csv")
+    pdf.ln(2)
+
+    pdf.sub_heading("10.4  Key Technologies")
+    widths_tech = [50, 135]
+    pdf.table_row(["Technology", "Purpose"], widths_tech, bold=True)
+    for tech, purpose in [
+        ("Python 3.11+", "Pipeline implementation language"),
+        ("pandas / PyArrow", "Data transformation and Parquet I/O"),
+        ("Pydantic", "Data model validation and settings management"),
+        ("httpx", "Async HTTP client for data ingestion"),
+        ("boto3", "AWS SDK for S3, Glue, and Athena access"),
+        ("dbt-athena-community", "SQL-based transformation and testing on Athena"),
+        ("pytest", "Unit and integration test framework"),
+        ("fpdf2", "PDF generation for deliverables document"),
+    ]:
+        pdf.table_row([tech, purpose], widths_tech)
+
     # ── Output ────────────────────────────────────────────────
-    output_path = "docs/OddsWatch_Final_Project_Deliverables.pdf"
+    output_path = "docs/Team2_FinalProjectDocument.pdf"
     pdf.output(output_path)
     print(f"PDF written to {output_path}")
 

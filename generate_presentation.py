@@ -132,7 +132,7 @@ def build_presentation():
                  "OddsWatch", font_size=54, bold=True, color=WHITE,
                  alignment=PP_ALIGN.CENTER)
     add_text_box(slide, Inches(1), Inches(2.8), Inches(11), Inches(0.8),
-                 "Real-Time Sports Betting Odds & Line-Movement Platform",
+                 "Sports Betting Odds Analytics Platform",
                  font_size=22, color=RGBColor(180, 200, 230),
                  alignment=PP_ALIGN.CENTER)
 
@@ -148,7 +148,7 @@ def build_presentation():
                  font_size=16, color=RGBColor(160, 180, 210),
                  alignment=PP_ALIGN.CENTER)
     add_text_box(slide, Inches(1), Inches(5.0), Inches(11), Inches(0.5),
-                 "Danny Affleck  |  July 2026",
+                 "Team 2: Danny Affleck, Aadi Gupta, Ken Nanayama  |  July 2026",
                  font_size=16, color=RGBColor(160, 180, 210),
                  alignment=PP_ALIGN.CENTER)
 
@@ -812,7 +812,7 @@ def build_presentation():
                  color=RGBColor(160, 180, 210), alignment=PP_ALIGN.CENTER)
 
     # ── Save ──────────────────────────────────────────────────
-    output_path = "docs/OddsWatch_Presentation.pptx"
+    output_path = "docs/Team2_FinalPresentation.pptx"
     prs.save(output_path)
     print(f"Presentation saved to {output_path}")
 
