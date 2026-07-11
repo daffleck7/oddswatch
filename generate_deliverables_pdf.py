@@ -140,6 +140,18 @@ def build_pdf() -> None:
     pdf.ln(4)
     pdf.cell(0, 8, "July 2026", align="C", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
+    # AI disclosure footnote
+    pdf.set_y(-35)
+    pdf.set_draw_color(180, 180, 180)
+    pdf.line(30, pdf.get_y(), 180, pdf.get_y())
+    pdf.ln(3)
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.set_text_color(120, 120, 120)
+    pdf.multi_cell(0, 4,
+        "AI tools (Claude) were used as a thinking aid for code scaffolding, document "
+        "formatting, and iterative refinement of deliverables. All architecture decisions, "
+        "design rationale, and analysis reflect the team's own understanding.")
+
     # ── SECTION: Problem / Business Use Case ──────────────────
     pdf.add_page()
     pdf.section_title("1", "Problem / Business Use Case & Objectives")
